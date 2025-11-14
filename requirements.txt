@@ -1,0 +1,11 @@
+fastapi
+ultralytics
+opencv-python
+numpy
+nbformat
+pillow
+pydantic
+python-dotenv
+python-multipart
+requests
+uvicorn
