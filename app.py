@@ -35,9 +35,13 @@ app = FastAPI(title="SmartRecyclebot Python Service")
 # Add CORS middleware for Laravel
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your Laravel domain
+    allow_origins=[
+        "https://smartrecyclebot.com",
+        "http://localhost:8000",  # for local testing
+        "http://127.0.0.1:8000"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
