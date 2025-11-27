@@ -5,7 +5,6 @@ import io
 import time
 from typing import Any, Dict, List, Optional
 
-from camera_controller import start_camera_thread, stop_camera_thread, camera_status
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,36 +22,63 @@ logger = logging.getLogger(__name__)
 # load .env
 load_dotenv()
 
-# import your existing modules
+# Import modules with error handling
+try:
+    from camera_controller import start_camera_thread, stop_camera_thread, camera_status
+except ImportError as e:
+    logger.warning(f"camera_controller not available: {e}")
+    # Provide fallback functions
+    def camera_status():
+        return {"running": False, "last_result": None}
+    def start_camera_thread():
+        return {"started": False, "message": "Camera controller not available"}
+    def stop_camera_thread():
+        return {"stopped": False, "message": "Camera controller not available"}
+
 from detector import Detector
 
 # --- Config ---
 MODEL_PATH = os.getenv("MODEL_PATH", "models/best.onnx")
 SERVICE_PORT = int(os.getenv("PYTHON_SERVICE_PORT", 8000))
 
+# Create FastAPI app
 app = FastAPI(title="SmartRecyclebot Python Service")
 
-# Add CORS middleware for Laravel
+# CRITICAL: Add CORS middleware BEFORE routes
+# This allows your Laravel website to communicate with this service
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://smartrecyclebot.com",
-        "http://localhost:8000",  # for local testing
-        "http://127.0.0.1:8000"
+        "https://www.smartrecyclebot.com",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 # instantiate detector
+detector = None
 try:
     detector = Detector(model_path=MODEL_PATH)
-    logger.info(f"Detector initialized with model: {MODEL_PATH}")
+    logger.info(f"✓ Detector initialized with model: {MODEL_PATH}")
+    
+    # Force garbage collection after loading model
+    gc.collect()
+    
 except TypeError:
     # fallback: Detector() without args
-    detector = Detector()
-    logger.warning("Detector initialized without model path")
+    try:
+        detector = Detector()
+        logger.warning("Detector initialized without model path")
+    except Exception as e2:
+        logger.error(f"Fallback detector initialization failed: {e2}")
+        detector = None
 except Exception as e:
     logger.error(f"Failed to initialize detector: {e}")
     detector = None
@@ -125,17 +151,21 @@ def _call_detect_with_fallbacks(image_bytes: bytes):
 
 @app.get("/")
 def root():
-    """Root endpoint"""
+    """Root endpoint - Service information"""
     return {
-        "service": "SmartRecycleBot Camera Service",
+        "service": "SmartRecycleBot Python Service",
+        "version": "2.0",
         "status": "running",
+        "model": MODEL_PATH,
+        "detector_loaded": detector is not None,
         "endpoints": {
             "health": "/health",
-            "camera_start": "/camera/start",
-            "camera_stop": "/camera/stop",
+            "infer": "/infer (POST)",
+            "predict_latest": "/predict_latest",
+            "camera_start": "/camera/start (POST)",
+            "camera_stop": "/camera/stop (POST)",
             "camera_status": "/camera/status",
-            "camera_latest": "/camera/latest",
-            "infer": "/infer"
+            "camera_latest": "/camera/latest"
         }
     }
 
@@ -147,7 +177,8 @@ def health():
     return {
         "status": "ok",
         "detector_loaded": detector is not None,
-        "camera_running": cam_status.get("running", False)
+        "camera_running": cam_status.get("running", False),
+        "model_path": MODEL_PATH
     }
 
 
@@ -156,6 +187,9 @@ async def infer(file: UploadFile = File(...)):
     """
     Accepts an uploaded image file (multipart/form-data).
     Runs detection and returns detections.
+    
+    Example usage:
+    curl -X POST https://your-service.com/infer -F "file=@image.jpg"
     """
     if detector is None:
         raise HTTPException(status_code=503, detail="Detector not initialized")
@@ -170,9 +204,10 @@ async def infer(file: UploadFile = File(...)):
 
         # IMPORTANT: Clear memory after detection
         gc.collect()
+        
     except Exception as e:
         logger.error(f"Detection failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Detection failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Detection failed: {str(e)}")
 
     # normalize result to a dict with 'detections' key if possible
     if isinstance(detections, dict):
@@ -265,7 +300,8 @@ async def startup_event():
     logger.info("=" * 60)
     logger.info(f"Model Path: {MODEL_PATH}")
     logger.info(f"Service Port: {SERVICE_PORT}")
-    logger.info(f"Detector Status: {'Loaded' if detector else 'Not Loaded'}")
+    logger.info(f"Detector Status: {'✓ Loaded' if detector else '✗ Not Loaded'}")
+    logger.info(f"CORS Enabled for: smartrecyclebot.com")
     logger.info("=" * 60)
 
 
