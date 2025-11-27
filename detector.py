@@ -7,9 +7,9 @@ except Exception as e:
     raise RuntimeError("ultralytics package not available. Install with `pip install ultralytics`") from e
 
 class Detector:
-    def __init__(self, model_path: str = "models/best.pt", conf_threshold: float = 0.30):
+    def __init__(self, model_path: str = "models/best.onnx", conf_threshold: float = 0.30):
         """
-        model_path: path to your YOLO weights (or 'best.pt')
+        model_path: path to your YOLO weights (or 'best.onnx')
         conf_threshold: minimum confidence to consider
         """
         self.model = YOLO(model_path)

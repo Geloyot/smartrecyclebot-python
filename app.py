@@ -1,5 +1,5 @@
 # app.py
-
+import gc
 import os
 import io
 import time
@@ -27,7 +27,7 @@ load_dotenv()
 from detector import Detector
 
 # --- Config ---
-MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
+MODEL_PATH = os.getenv("MODEL_PATH", "models/best.onnx")
 SERVICE_PORT = int(os.getenv("PYTHON_SERVICE_PORT", 8000))
 
 app = FastAPI(title="SmartRecyclebot Python Service")
@@ -167,6 +167,9 @@ async def infer(file: UploadFile = File(...)):
     try:
         detections = _call_detect_with_fallbacks(contents)
         logger.info(f"Detection completed: {len(detections) if isinstance(detections, list) else 'N/A'} objects")
+
+        # IMPORTANT: Clear memory after detection
+        gc.collect()
     except Exception as e:
         logger.error(f"Detection failed: {e}")
         raise HTTPException(status_code=500, detail=f"Detection failed: {e}")

@@ -26,3 +26,10 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Files
+models/best_segment.pt
+models/best.pt
+camera_test.py
+segment_test.py
+util_pt_to_onnx.py

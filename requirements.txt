@@ -1,6 +1,6 @@
 fastapi
 ultralytics
-opencv-python
+opencv-python-headless
 numpy
 nbformat
 pillow
@@ -9,3 +9,8 @@ python-dotenv
 python-multipart
 requests
 uvicorn
+onnx
+onnxslim
+onnxruntime
+lap
+psutil

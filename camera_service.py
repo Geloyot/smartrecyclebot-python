@@ -60,7 +60,7 @@ def draw_boxes(frame, detections):
     return frame
 
 def main():
-    MODEL_PATH = os.environ.get("MODEL_PATH", "models/best.pt")
+    MODEL_PATH = os.environ.get("MODEL_PATH", "models/best.onnx")
     detector = Detector(model_path=MODEL_PATH, conf_threshold=CONF_THRESHOLD)
     tracker = StabilityTracker(iou_threshold=IOU_THRESHOLD, conf_delta=CONF_DELTA, required_frames=REQUIRED_FRAMES)
 

@@ -44,4 +44,4 @@ uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 
 ## Model
 Uses YOLOv8 trained on custom waste classification dataset.
-Model file: `best.pt`
+Model file: `best.onnx`

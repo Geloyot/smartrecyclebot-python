@@ -7,7 +7,7 @@ from ultralytics import YOLO
 import xml.etree.ElementTree as ET
 
 # ---------------- CONFIG ----------------
-MODEL_PATH = "models/best.pt"
+MODEL_PATH = "models/best.onnx"
 OUTPUT_DIR = "images"
 CAM_INDEX = 0
 IMGZ = 640  # inference size

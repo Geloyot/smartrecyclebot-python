@@ -13,7 +13,7 @@ import camera_service
 load_dotenv()
 
 CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", 0))
-MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
+MODEL_PATH = os.getenv("MODEL_PATH", "models/best.onnx")
 IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", 0.6))
 CONF_DELTA = float(os.getenv("CONF_DELTA", 0.05))
 REQUIRED_FRAMES = int(os.getenv("REQUIRED_FRAMES", 5))
