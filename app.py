@@ -50,7 +50,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://smartrecyclebot.com",
-        "https://www.smartrecyclebot.com",
+        "https://smartrecyclebot-b86k.onrender.com",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://localhost"
