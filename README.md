@@ -3,10 +3,10 @@
 YOLOv8-based waste classification detection service.
 
 ## Features
-- 🤖 Real-time object detection
-- 🎯 Waste classification (biodegradable/non-biodegradable)
-- 📡 RESTful API for camera control
-- 🔄 Integration with Laravel web app
+- Real-time object detection
+- Waste classification (biodegradable/non-biodegradable)
+- RESTful API for camera control
+- Integration with Laravel web app
 
 ## Local Setup
 
@@ -45,3 +45,7 @@ uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ## Model
 Uses YOLOv8 trained on custom waste classification dataset.
 Model file: `best.onnx`
+
+## Related System Components:
+- Robotic Arm Integration: https://github.com/Geloyot/smartrecyclebot-robotic-arm-integration
+- Web Dashboard Application : https://github.com/Geloyot/smartrecyclebot
